@@ -43,13 +43,10 @@ class PublicationBarcode {
 		$this->encode_ean_13($code);
 		if (!empty($addon)) {
 			$this->addon = $addon;
-			switch ($this->type) {
-				case 'isbn':
-					$this->encode_ean_5($addon);
-					break;
-				case 'issn':
-					$this->encode_ean_2($addon);
-					break;
+			if ($this->type == 'isbn' || strlen($addon) > 2) {
+				$this->encode_ean_5($addon);
+			} else {
+				$this->encode_ean_2($addon);
 			}
 		}
 
@@ -109,6 +106,7 @@ class PublicationBarcode {
 	}
 
 	private function encode_ean_5 (string $code) {
+		$code = sprintf("%05d", $code);
 		$this->addon = $code;
 		$odd = $even = 0;
 		for ($i = 0; $i < 5; $i++) {
@@ -125,6 +123,7 @@ class PublicationBarcode {
 	}
 
 	private function encode_ean_2 (string $code) {
+		$code = sprintf("%02d", $code);
 		$this->addon = $code;
 		$modulo_4 = intval($code) % 4;
 		$parity = $this->parity_2[$modulo_4];
@@ -176,7 +175,7 @@ class PublicationBarcode {
 		$addon_width = 0;
 		if (!empty($this->addon)) {
 			$gap_width = 7 * $bar_width;
-			$addon_width = $this->type == 'isbn' ? $ean_5_width : $ean_2_width;
+			$addon_width = ($this->type == 'isbn' || strlen($this->addon) > 2) ? $ean_5_width : $ean_2_width;
 		}
 		$svg_width = $ean_13_width + $gap_width + $addon_width;
 
