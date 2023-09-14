@@ -272,33 +272,7 @@ class PublicationBarcode {
 	<?php endif ?>
 </svg>
 		<?php
-		exit;
 		$svg = ob_get_clean();
-		return $svg;
-		$svg  = '<?xml version="1.0"?>';
-		$svg .= '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="400" viewBox="0 0 ' . $svg_width . ' 120">';
-		
-		// EAN-13
-		$svg .= "<g>";
-		$ean_13 = ["101", $this->bars_left, "01010", $this->bars_right, "101"];
-		$x = 28;
-		for ($part = 0; $part < 5; $part++) {
-			$height = ($part % 2 === 0) ? 100 : 80;
-			for ($i = 0; $i < strlen($ean_13[$part]); $i++) {
-				$bar = $ean_13[$part][$i];
-				if ($bar) {
-					$svg .= "<rect x=\"$x\" y=\"0\" width=\"$bar_width\" height=\"$height\" />";
-				}
-				$x += $bar_width;
-			}
-		}
-		$svg .= "</g>";
-
-		// EAN-13 text
-		$svg .= "<g font-face=\"Arial\">";
-		$svg .= "<text x=\"0\" y=\"90\" textLength=\"" . ($bar_width * 7) . "\" lengthAdjust=\"spacing\">" . substr($this->code, 0, 1) . "</text>";
-		$svg .= "</g>";
-		$svg .= "</svg>";
 		return $svg;
 	}
 
