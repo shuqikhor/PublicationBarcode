@@ -13,6 +13,10 @@ class PublicationBarcode {
 	private ?string $issn = null;
 	private ?string $addon = null;
 
+	// settings
+	public int $bar_width = 4;
+	public int $bar_height = 200;
+
 	// code type
 	private string $type = 'isbn';
 
@@ -221,34 +225,14 @@ class PublicationBarcode {
 	 * Generate SVG data
 	 */
 	private function svg () {
-		$bar_width = 4;
-		$bar_height = 200;
-		$ean_13_width = 102 * $bar_width;
-		$ean_5_width = 47 * $bar_width;
-		$ean_2_width = 20 * $bar_width;
-		$digit_width = 7 * $bar_width;
+		extract($this->measure());
 		
-		$gap_width = 0;
-		$addon_width = 0;
-		if (!empty($this->addon)) {
-			$gap_width = 7 * $bar_width;
-			$addon_width = ($this->type != 'issn' || strlen($this->addon) > 2) ? $ean_5_width : $ean_2_width;
-		}
-		$svg_width = $ean_13_width + $gap_width + $addon_width;
-
-		$label = '';
-		$label_height = 0;
-		if (!empty($this->issn)) {
-			$label = "ISSN " . substr($this->issn, 0, 4) . "-" . substr($this->issn, 4, 4);
-			$label_height = 80;
-		}
-		$svg_height = $label_height + $bar_height + 20;
-
+		$label = empty($this->issn) ? '' : "ISSN " . substr($this->issn, 0, 4) . "-" . substr($this->issn, 4, 4);
 		$ean_13 = ["101", $this->bars_left, "01010", $this->bars_right, "101"];
 
 		ob_start();
 		?>
-<svg viewBox="0 0 <?= $svg_width ?> <?= $svg_height ?>" xmlns="http://www.w3.org/2000/svg">
+<svg width="<?= $img_width ?>" height="<?= $img_height ?>" viewBox="0 0 <?= $img_width ?> <?= $img_height ?>" xmlns="http://www.w3.org/2000/svg">
 	<style>
 		.code {
 			font-family: Arial;
@@ -265,7 +249,7 @@ class PublicationBarcode {
 
 	<?php if (!empty($this->issn)): ?>
 		<g>
-			<text class="label" x="<?= ($svg_width - $digit_width) / 2 + $digit_width ?>" y="48"><?= $label ?></text>
+			<text class="label" x="<?= ($img_width - $digit_width) / 2 + $digit_width ?>" y="48"><?= $label ?></text>
 		</g>
 	<?php endif ?>
 
@@ -302,7 +286,7 @@ class PublicationBarcode {
 	<?php if (!empty($this->addon)): ?>
 		<g>
 			<!-- Add-On Text -->
-			<text class="code" x="<?= $svg_width - $addon_width + ($digit_width / 2) ?>" y="<?= $label_height + 20 ?>" textLength="<?= $addon_width - $digit_width ?>"><?= $this->addon ?></text>
+			<text class="code" x="<?= $img_width - $addon_width + ($digit_width / 2) ?>" y="<?= $label_height + 20 ?>" textLength="<?= $addon_width - $digit_width ?>"><?= $this->addon ?></text>
 		</g>
 		<g>
 			<!-- Add-On Bars -->
@@ -331,6 +315,28 @@ class PublicationBarcode {
 		<?php
 		$svg = ob_get_clean();
 		return $svg;
+	}
+
+	private function measure () {
+		$bar_width = $this->bar_width;
+		$bar_height = $this->bar_height;
+		$ean_13_width = 102 * $bar_width;
+		$ean_5_width = 47 * $bar_width;
+		$ean_2_width = 20 * $bar_width;
+		$digit_width = 7 * $bar_width;
+
+		$gap_width = 0;
+		$addon_width = 0;
+		if (!empty($this->addon)) {
+			$gap_width = 7 * $bar_width;
+			$addon_width = ($this->type != 'issn' || strlen($this->addon) > 2) ? $ean_5_width : $ean_2_width;
+		}
+		$img_width = $ean_13_width + $gap_width + $addon_width;
+
+		$label_height = empty($this->issn) ? 0 : 80;
+		$img_height = $label_height + $bar_height + 20;
+
+		return compact('bar_width', 'bar_height', 'ean_13_width', 'ean_5_width', 'ean_2_width', 'digit_width', 'gap_width', 'addon_width', 'img_width', 'img_height', 'label_height');
 	}
 
 	/**
