@@ -16,6 +16,7 @@ class PublicationBarcode {
 	// settings
 	public int $bar_width = 4;
 	public int $bar_height = 200;
+	public int $jpeg_quality = 90;
 
 	// code type
 	private string $type = 'isbn';
@@ -62,7 +63,6 @@ class PublicationBarcode {
 		// encode barcodes
 		$this->encode_ean_13($code);
 		if (!empty($addon)) {
-			$this->addon = $addon;
 			if ($this->type != 'issn' || strlen($addon) > 2) {
 				$this->encode_ean_5($addon);
 			} else {
@@ -74,6 +74,9 @@ class PublicationBarcode {
 		switch ($format) {
 			case 'png':
 				return $this->png();
+			case 'jpg':
+			case 'jpeg':
+				return $this->jpeg();
 			case 'svg':
 			default:
 				return $this->svg();
@@ -215,18 +218,11 @@ class PublicationBarcode {
 	}
 
 	/**
-	 * Generate PNG data
-	 */
-	private function png () {
-
-	}
-
-	/**
 	 * Generate SVG data
 	 */
 	private function svg () {
 		extract($this->measure());
-		
+
 		$label = empty($this->issn) ? '' : "ISSN " . substr($this->issn, 0, 4) . "-" . substr($this->issn, 4, 4);
 		$ean_13 = ["101", $this->bars_left, "01010", $this->bars_right, "101"];
 
@@ -317,6 +313,28 @@ class PublicationBarcode {
 		return $svg;
 	}
 
+	/**
+	 * Generate PNG data
+	 */
+	private function png () {
+		$image_data = $this->render_raster();
+		ob_start();
+		imagepng($image_data);
+		imagedestroy($image_data);
+		return ob_get_clean();
+	}
+
+	/**
+	 * Generate JPEG data
+	 */
+	private function jpeg () {
+		$image_data = $this->render_raster();
+		ob_start();
+		imagejpeg($image_data, $this->jpeg_quality);
+		imagedestroy($image_data);
+		return ob_get_clean();
+	}
+
 	private function measure () {
 		$bar_width = $this->bar_width;
 		$bar_height = $this->bar_height;
@@ -337,6 +355,109 @@ class PublicationBarcode {
 		$img_height = $label_height + $bar_height + 20;
 
 		return compact('bar_width', 'bar_height', 'ean_13_width', 'ean_5_width', 'ean_2_width', 'digit_width', 'gap_width', 'addon_width', 'img_width', 'img_height', 'label_height');
+	}
+
+	private function render_raster () {
+		extract($this->measure());
+
+		$label = empty($this->issn) ? '' : "ISSN " . substr($this->issn, 0, 4) . "-" . substr($this->issn, 4, 4);
+		$font = "font/Arial.ttf";
+
+		$image = imagecreate($img_width, $img_height);
+		imagefilledrectangle($image, 0, 0, $img_width, $img_height, imagecolorallocate($image, 255, 255, 255));
+		$black = imagecolorallocate($image, 0, 0, 0);
+
+		// ISSN Label
+		if (!empty($this->issn)) {
+			$text_measurements = imagettfbbox(35, 0, $font, $label);
+			$text_width = $text_measurements[4] - $text_measurements[6];
+			$x = ($img_width - $digit_width - $text_width) / 2 + $digit_width;
+			$y = 48;
+			imagettftext($image, 35, 0, $x, $y, $black, $font, $label);
+		}
+
+		// EAN-13 Bars
+		$ean_13 = ["101", $this->bars_left, "01010", $this->bars_right, "101"];
+		$x = $digit_width;
+		for ($part = 0; $part < 5; $part++) {
+			$height = ($part % 2 === 0) ? $bar_height : $bar_height - 20;
+			$bar_thickness = 0;
+			for ($i = 0; $i < strlen($ean_13[$part]); $i++) {
+				$bar = $ean_13[$part][$i];
+				if ($bar) {
+					$bar_thickness += $bar_width;
+					if ($i + 1 == strlen($ean_13[$part]) || $ean_13[$part][$i+1] == '0') {
+						imagefilledrectangle($image, $x, $label_height, $x + $bar_thickness, $label_height + $height, $black);
+						$x += $bar_thickness;
+						$bar_thickness = 0;
+					}
+				} else {
+					$x += $bar_width;
+				}
+			}
+		}
+
+		// EAN-13 Text
+		$y = $label_height + $bar_height + 10;
+		imagettftext($image, 20, 0, 0, $y, $black, $font, $this->code[0]);
+
+		$textbox_width = 29 * $bar_width;
+		$text_measurements = imagettfbbox(20, 0, $font, substr($this->code, 1, 6));
+		$text_width = $text_measurements[4] - $text_measurements[6];
+		$text_gap = ($textbox_width - $text_width) / 5;
+		for ($i = 1; $i <= 6; $i++) {
+			$x = 13.5 * $bar_width;
+			$x += ($i - 1) * $textbox_width / 6; // character width
+			$x += ($i - 1) * $text_gap; // character gaps
+			imagettftext($image, 20, 0, $x, $y, $black, $font, $this->code[$i]);
+		}
+
+		$text_measurements = imagettfbbox(20, 0, $font, substr($this->code, 7, 6));
+		$text_width = $text_measurements[4] - $text_measurements[6];
+		$text_gap = ($textbox_width - $text_width) / 5;
+		for ($i = 7; $i <= 12; $i++) {
+			$x = 60 * $bar_width;
+			$x += ($i - 7) * $textbox_width / 6; // character width
+			$x += ($i - 7) * $text_gap; // character gaps
+			imagettftext($image, 20, 0, $x, $y, $black, $font, $this->code[$i]);
+		}
+
+		if (!empty($this->addon)) {
+			// Add-On Text
+			$addon_length = strlen($this->addon);
+			$textbox_width = $addon_width - $digit_width;
+			$text_measurements = imagettfbbox(20, 0, $font, $this->addon);
+			$text_width = $text_measurements[4] - $text_measurements[6];
+			$text_gap = ($textbox_width - $text_width) / ($addon_length - 1);
+			for ($i = 0; $i < $addon_length; $i++) {
+				$x = $img_width - $addon_width + ($digit_width / 2);
+				$x += $i * $text_width / $addon_length; // character width
+				$x += $i * $text_gap; // character gaps
+				$y = $label_height + 20;
+				imagettftext($image, 20, 0, $x, $y, $black, $font, $this->addon[$i]);
+			}
+	
+			// Add-On Bars
+			$x = $ean_13_width + $gap_width;
+			$y = $label_height + 30;
+			$height = $bar_height - 30;
+			$bar_thickness = 0;
+			for ($i = 0; $i < strlen($this->bars_addon); $i++) {
+				$bar = $this->bars_addon[$i];
+				if ($bar) {
+					$bar_thickness += $bar_width;
+					if ($i + 1 == strlen($this->bars_addon) || $this->bars_addon[$i+1] == '0') {
+						imagefilledrectangle($image, $x, $y, $x + $bar_thickness, $y + $height, $black);
+						$x += $bar_thickness;
+						$bar_thickness = 0;
+					}
+				} else {
+					$x += $bar_width;
+				}
+			}
+		}
+
+		return $image;
 	}
 
 	/**
