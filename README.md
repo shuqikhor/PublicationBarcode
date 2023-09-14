@@ -2,6 +2,13 @@
 PHP script specifically for generating ISBN and ISSN barcodes.  
 It could be used to generate other EAN-13 barcodes too, though not designed to do so.  
 
+## Installation
+
+You could either download everything in `src/` into your project, or install via composer:  
+```
+composer require sqkhor/publication-barcode
+```
+
 ## Usage
 ```php
 // ISBN
