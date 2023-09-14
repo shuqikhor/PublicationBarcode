@@ -25,9 +25,9 @@ ISSN with issue number:
 <img src="sample-issn.svg" width="300" style="background: #fff">
 
 ## To-Do
-* PNG / JPG render capability
-* Class parameters to set bar width & height
-* Reset after every use
-* Error handling
-* Comments / documentations
-* Tests
+- [ ] PNG / JPG render capability
+- [ ] Class parameters to set bar width & height
+- [ ] Reset after every use
+- [ ] Error handling
+- [x] Comments / documentations
+- [ ] Tests

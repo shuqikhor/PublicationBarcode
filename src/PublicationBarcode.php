@@ -3,14 +3,26 @@
 namespace sqkhor\Barcode;
 
 class PublicationBarcode {
+	// encoded bar data in 0 and 1
 	private string $bars_left = "";
 	private string $bars_right = "";
 	private string $bars_addon = "";
+
+	// original codes
 	private string $code = "";
-	private string $type = 'isbn';
 	private ?string $issn = null;
 	private ?string $addon = null;
 
+	// code type
+	private string $type = 'isbn';
+
+	/**
+	 * Returns image data of the generated barcode.
+	 * 
+	 * @param string      $format  Currently only 'svg' is supported
+	 * @param string      $code    Either 13-digit ISBN or ISSN barcode, or 8-digit ISSN number
+	 * @param string|null $addon   Add-on barcode on the right side, could be price indicator for ISBN or issue number for ISSN
+	 */
 	public function render (string $format, string $code, ?string $addon = null) {
 		// normalise
 		$code = strtoupper($code);
@@ -60,6 +72,11 @@ class PublicationBarcode {
 		}
 	}
 
+	/**
+	 * Calculate check-digit of 8-digit ISSN number.
+	 * 
+	 * @param string $code  The first 7 digit of ISSN number
+	 */
 	private function get_issn_check_digit ($code):string {
 		$sum = 0;
 		for ($i = 0; $i < 7; $i++) {
@@ -72,7 +89,13 @@ class PublicationBarcode {
 		$modulo = 11 - $modulo;
 		return $modulo === 10 ? 'X' : $modulo;
 	}
-	
+
+	/**
+	 * Prepare to encode EAN-13. Code will be splitted to 3 parts: first_digit, left_digits and right_digits.  
+	 * This method will check the check-digit, determine the parity of the left part and send to encode.
+	 * 
+	 * @param string $code  The 13-digit barcode
+	 */
 	private function encode_ean_13 (string $code) {
 		$check_digit = $this->get_check_digit($code);
 		if ($check_digit != $code[12]) {
@@ -88,6 +111,11 @@ class PublicationBarcode {
 		$this->encode('right', $right_digits);
 	}
 
+	/**
+	 * Calculate the check-digit of EAN-13.
+	 * 
+	 * @param string $code  The 13-digit barcode
+	 */
 	private function get_check_digit ($code):int {
 		$odd = $even = 0;
 		for ($i = 0; $i < 12; $i++) {
@@ -105,6 +133,12 @@ class PublicationBarcode {
 		return $check_digit;
 	}
 
+	/**
+	 * Prepare to encode EAN-5.  
+	 * This method will determine the parity and send to encode.
+	 * 
+	 * @param string $code  The 5-digit add-on code
+	 */
 	private function encode_ean_5 (string $code) {
 		$code = sprintf("%05d", $code);
 		$this->addon = $code;
@@ -122,6 +156,12 @@ class PublicationBarcode {
 		$this->encode('addon', $code, $parity);
 	}
 
+	/**
+	 * Prepare to encode EAN-2.  
+	 * This method will determine the parity and send to encode.
+	 * 
+	 * @param string $code  The 2-digit add-on code
+	 */
 	private function encode_ean_2 (string $code) {
 		$code = sprintf("%02d", $code);
 		$this->addon = $code;
@@ -130,6 +170,13 @@ class PublicationBarcode {
 		$this->encode('addon', $code, $parity);
 	}
 
+	/**
+	 * Encode the digits into bars.
+	 * 
+	 * @param string      $part    Which part to encode? Accepts left|right|addon
+	 * @param string      $code    The code for that part
+	 * @param string|null $parity  Which parity to be used, not required for 'right' part
+	 */
 	private function encode (string $part = 'left', string $code, ?string $parity = null) {
 		switch ($part) {
 			case 'left': {
@@ -159,10 +206,16 @@ class PublicationBarcode {
 		}
 	}
 
+	/**
+	 * Generate PNG data
+	 */
 	private function png () {
 
 	}
 
+	/**
+	 * Generate SVG data
+	 */
 	private function svg () {
 		$bar_width = 4;
 		$bar_height = 200;
@@ -276,6 +329,9 @@ class PublicationBarcode {
 		return $svg;
 	}
 
+	/**
+	 * Bars for L-digits.
+	 */
 	private array $code_left = [
 		0 => '0001101',
 		1 => '0011001',
@@ -289,6 +345,9 @@ class PublicationBarcode {
 		9 => '0001011'
 	];
 
+	/**
+	 * Bars for R-digits. This is to avoid repeated calculation from L-digits.
+	 */
 	private array $code_right = [
 		0 => '1110010',
 		1 => '1100110',
@@ -302,6 +361,9 @@ class PublicationBarcode {
 		9 => '1110100'
 	];
 
+	/**
+	 * Parity for G-digits.
+	 */
 	private array $parity_13 = [
 		0 => 'LLLLLL',
 		1 => 'LLGLGG',
@@ -315,6 +377,9 @@ class PublicationBarcode {
 		9 => 'LGGLGL'
 	];
 
+	/**
+	 * Parity for EAN-5.
+	 */
 	private array $parity_5 = [
 		0 => 'GGLLL',
 		1 => 'GLGLL',
@@ -328,6 +393,9 @@ class PublicationBarcode {
 		9 => 'LLGLG'
 	];
 
+	/**
+	 * Parity for EAN-2.
+	 */
 	private array $parity_2 = [
 		1 => 'LL',
 		2 => 'LG',
