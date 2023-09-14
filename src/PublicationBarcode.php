@@ -361,7 +361,7 @@ class PublicationBarcode {
 		extract($this->measure());
 
 		$label = empty($this->issn) ? '' : "ISSN " . substr($this->issn, 0, 4) . "-" . substr($this->issn, 4, 4);
-		$font = "font/Arial.ttf";
+		$font = __DIR__ . "/font/Arial.ttf";
 
 		$image = imagecreate($img_width, $img_height);
 		imagefilledrectangle($image, 0, 0, $img_width, $img_height, imagecolorallocate($image, 255, 255, 255));
