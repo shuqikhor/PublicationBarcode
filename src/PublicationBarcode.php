@@ -21,14 +21,25 @@ class PublicationBarcode {
 	// code type
 	private string $type = 'isbn';
 
+	public function __construct (string $code, ?string $addon = null) {
+		$this->generate($code, $addon);
+	}
+
 	/**
-	 * Returns image data of the generated barcode.
+	 * Do all necessary calculations for the barcode.
 	 * 
-	 * @param string      $format  Currently only 'svg' is supported
 	 * @param string      $code    Either 13-digit ISBN or ISSN barcode, or 8-digit ISSN number
 	 * @param string|null $addon   Add-on barcode on the right side, could be price indicator for ISBN or issue number for ISSN
 	 */
-	public function render (string $format, string $code, ?string $addon = null) {
+	public function generate (string $code, ?string $addon = null) {
+		// reset
+		$this->bars_left = "";
+		$this->bars_right = "";
+		$this->bars_addon = "";
+		$this->code = "";
+		$this->issn = null;
+		$this->addon = null;
+
 		// normalise
 		$code = strtoupper($code);
 		$code = preg_replace("/\D/", "", $code);
@@ -69,7 +80,14 @@ class PublicationBarcode {
 				$this->encode_ean_2($addon);
 			}
 		}
+	}
 
+	/**
+	 * Returns image data of the generated barcode.
+	 * 
+	 * @param string      $format  Currently only 'svg' is supported
+	 */
+	public function render (string $format) {
 		// output
 		switch ($format) {
 			case 'png':
@@ -220,7 +238,7 @@ class PublicationBarcode {
 	/**
 	 * Generate SVG data
 	 */
-	private function svg () {
+	public function svg () {
 		extract($this->measure());
 
 		$label = empty($this->issn) ? '' : "ISSN " . substr($this->issn, 0, 4) . "-" . substr($this->issn, 4, 4);
@@ -316,7 +334,7 @@ class PublicationBarcode {
 	/**
 	 * Generate PNG data
 	 */
-	private function png () {
+	public function png () {
 		$image_data = $this->render_raster(true);
 		ob_start();
 		imagepng($image_data);
@@ -327,7 +345,7 @@ class PublicationBarcode {
 	/**
 	 * Generate JPEG data
 	 */
-	private function jpeg () {
+	public function jpeg () {
 		$image_data = $this->render_raster(false);
 		ob_start();
 		imagejpeg($image_data, null, $this->jpeg_quality);
