@@ -317,7 +317,7 @@ class PublicationBarcode {
 	 * Generate PNG data
 	 */
 	private function png () {
-		$image_data = $this->render_raster();
+		$image_data = $this->render_raster(true);
 		ob_start();
 		imagepng($image_data);
 		imagedestroy($image_data);
@@ -328,9 +328,9 @@ class PublicationBarcode {
 	 * Generate JPEG data
 	 */
 	private function jpeg () {
-		$image_data = $this->render_raster();
+		$image_data = $this->render_raster(false);
 		ob_start();
-		imagejpeg($image_data, $this->jpeg_quality);
+		imagejpeg($image_data, null, $this->jpeg_quality);
 		imagedestroy($image_data);
 		return ob_get_clean();
 	}
@@ -357,14 +357,23 @@ class PublicationBarcode {
 		return compact('bar_width', 'bar_height', 'ean_13_width', 'ean_5_width', 'ean_2_width', 'digit_width', 'gap_width', 'addon_width', 'img_width', 'img_height', 'label_height');
 	}
 
-	private function render_raster () {
+	private function render_raster (bool $alpha = true) {
 		extract($this->measure());
 
 		$label = empty($this->issn) ? '' : "ISSN " . substr($this->issn, 0, 4) . "-" . substr($this->issn, 4, 4);
 		$font = __DIR__ . "/font/Arial.ttf";
 
-		$image = imagecreate($img_width, $img_height);
-		imagefilledrectangle($image, 0, 0, $img_width, $img_height, imagecolorallocate($image, 255, 255, 255));
+		if ($alpha) {
+			$image = imagecreatetruecolor($img_width, $img_height);
+			imagealphablending($image, true);
+			$transparency = imagecolorallocatealpha($image, 0, 0, 0, 127);
+			imagefill($image, 0, 0, $transparency);
+			imagesavealpha($image, true);
+		} else {
+			$image = imagecreate($img_width, $img_height);
+			imagefill($image, 0, 0, imagecolorallocate($image, 255, 255, 255));
+		}
+
 		$black = imagecolorallocate($image, 0, 0, 0);
 
 		// ISSN Label
