@@ -1,0 +1,26 @@
+{
+    "name": "sqkhor/publication-barcode",
+	"type": "library",
+    "description": "For generating ISBN and ISSN barcodes.",
+	"keywords": ["isbn", "issn", "ean", "barcode"],
+	"license": "MIT",
+	"authors": [
+	    {
+	      "name": "Shuqi Khor",
+	      "email": "hello@sqkhor.com",
+		  "homepage": "https://sqkhor.com"
+	    }
+	],
+    "require": {
+        "php": "^7.3|^8.0",
+		"ext-gd": "*"
+    },
+    "suggest": {
+        "ext-gd": "GD is required to generate PNG and JPEG"
+    },
+	"autoload": {
+		"psr-4": {
+			"SQKhor\\Barcode\\": "src/"
+		}
+	}
+}
