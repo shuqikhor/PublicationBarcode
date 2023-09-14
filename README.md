@@ -5,15 +5,15 @@ It could be used to generate other EAN-13 barcodes too, though not designed to d
 ## Usage
 ```php
 // ISBN
-$barcode = new \sqkhor\Barcode\PublicationBarcode();
+$barcode = new \SQKhor\Barcode\PublicationBarcode();
 $svg = $barcode->render('svg', '978-967-2088-62-2');
 
 // ISBN with add on
-$barcode = new \sqkhor\Barcode\PublicationBarcode();
+$barcode = new \SQKhor\Barcode\PublicationBarcode();
 $svg = $barcode->render('svg', '978-967-2088-62-2', '50999');
 
 // ISSN with issue number
-$barcode = new \sqkhor\Barcode\PublicationBarcode();
+$barcode = new \SQKhor\Barcode\PublicationBarcode();
 $svg = $barcode->render('svg', '3009-1004', '01');
 ```
 

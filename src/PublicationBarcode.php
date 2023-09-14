@@ -1,6 +1,6 @@
 <?php
 
-namespace sqkhor\Barcode;
+namespace SQKhor\Barcode;
 
 class PublicationBarcode {
 	// encoded bar data in 0 and 1
