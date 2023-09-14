@@ -1,6 +1,6 @@
 # Barcode Generator for Publications
 PHP script specifically for generating ISBN and ISSN barcodes.  
-No it can't be used to generate other EAN-13 barcodes, but you could modify it to do so.
+It could be used to generate other EAN-13 barcodes too, though not designed to do so.  
 
 ## Usage
 ```php
