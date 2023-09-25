@@ -1,4 +1,4 @@
-<svg width="516" viewBox="0 0 516 300" xmlns="http://www.w3.org/2000/svg">
+<svg width="516" height="300" viewBox="0 0 516 300" xmlns="http://www.w3.org/2000/svg">
 	<style>
 		.code {
 			font-family: Arial;
@@ -33,6 +33,6 @@
 		</g>
 		<g>
 			<!-- Add-On Bars -->
-			<rect x="436" y="110" width="4" height="170" /><rect x="444" y="110" width="8" height="170" /><rect x="464" y="110" width="8" height="170" /><rect x="476" y="110" width="4" height="170" /><rect x="484" y="110" width="4" height="170" /><rect x="496" y="110" width="8" height="170" /><rect x="512" y="110" width="4" height="170" />		</g>
+			<rect x="436" y="110" width="4" height="170" /><rect x="444" y="110" width="8" height="170" /><rect x="464" y="110" width="8" height="170" /><rect x="476" y="110" width="4" height="170" /><rect x="484" y="110" width="4" height="170" /><rect x="492" y="110" width="8" height="170" /><rect x="508" y="110" width="8" height="170" />		</g>
 	</svg>
 		
