@@ -555,9 +555,9 @@ class PublicationBarcode {
 	 * Parity for EAN-2.
 	 */
 	private array $parity_2 = [
-		1 => 'LL',
-		2 => 'LG',
-		3 => 'GL',
-		4 => 'GG'
+		0 => 'LL',
+		1 => 'LG',
+		2 => 'GL',
+		3 => 'GG'
 	];
 }
