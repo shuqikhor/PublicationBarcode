@@ -206,7 +206,7 @@ class PublicationBarcode {
 	 * @param string      $code    The code for that part
 	 * @param string|null $parity  Which parity to be used, not required for 'right' part
 	 */
-	private function encode (string $part = 'left', string $code, ?string $parity = null) {
+	private function encode (string $part, string $code, ?string $parity = null) {
 		switch ($part) {
 			case 'left': {
 				for ($i = 0; $i < 6; $i++) {
@@ -400,7 +400,7 @@ class PublicationBarcode {
 			$text_width = $text_measurements[4] - $text_measurements[6];
 			$x = ($img_width - $digit_width - $text_width) / 2 + $digit_width;
 			$y = 48;
-			imagettftext($image, 35, 0, $x, $y, $black, $font, $label);
+			imagettftext($image, 35, 0, round($x), round($y), $black, $font, $label);
 		}
 
 		// EAN-13 Bars
@@ -426,7 +426,7 @@ class PublicationBarcode {
 
 		// EAN-13 Text
 		$y = $label_height + $bar_height + 10;
-		imagettftext($image, 20, 0, 0, $y, $black, $font, $this->code[0]);
+		imagettftext($image, 20, 0, 0, round($y), $black, $font, $this->code[0]);
 
 		$textbox_width = 29 * $bar_width;
 		$text_measurements = imagettfbbox(20, 0, $font, substr($this->code, 1, 6));
@@ -436,7 +436,7 @@ class PublicationBarcode {
 			$x = 13.5 * $bar_width;
 			$x += ($i - 1) * $textbox_width / 6; // character width
 			$x += ($i - 1) * $text_gap; // character gaps
-			imagettftext($image, 20, 0, $x, $y, $black, $font, $this->code[$i]);
+			imagettftext($image, 20, 0, round($x), round($y), $black, $font, $this->code[$i]);
 		}
 
 		$text_measurements = imagettfbbox(20, 0, $font, substr($this->code, 7, 6));
@@ -446,7 +446,7 @@ class PublicationBarcode {
 			$x = 60 * $bar_width;
 			$x += ($i - 7) * $textbox_width / 6; // character width
 			$x += ($i - 7) * $text_gap; // character gaps
-			imagettftext($image, 20, 0, $x, $y, $black, $font, $this->code[$i]);
+			imagettftext($image, 20, 0, round($x), round($y), $black, $font, $this->code[$i]);
 		}
 
 		if (!empty($this->addon)) {
